@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 class TokensDumperService(var project: Project) : DumperServiceInterface {
     val state = PhpDumpSettingsService.getInstance(project)
 
-    override suspend fun dump(file: String): Any? {
+    override suspend fun dump(file: String): Any {
         val phpSnippet = if (state.tokensObject) {
             // language=injectablephp
             $$"""
@@ -65,7 +65,7 @@ class TokensDumperService(var project: Project) : DumperServiceInterface {
                 }
             })
 
-            return@withContext output.toString()
+            output.toString()
         }
     }
 }

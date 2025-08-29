@@ -3,7 +3,6 @@ package com.github.xepozz.php_dump.panel
 import com.github.xepozz.php_dump.actions.CollapseTreeAction
 import com.github.xepozz.php_dump.actions.ExpandTreeAction
 import com.github.xepozz.php_dump.actions.RefreshAction
-import com.github.xepozz.php_dump.nonBlocking
 import com.github.xepozz.php_dump.services.OpcacheSettingsTreeDumperService
 import com.github.xepozz.php_dump.stubs.any_tree.AnyNodeList
 import com.github.xepozz.php_dump.stubs.any_tree.AnyRootNode
@@ -24,7 +23,9 @@ import com.intellij.ui.tree.AsyncTreeModel
 import com.intellij.ui.tree.StructureTreeModel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.tree.TreeUtil
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.GridLayout
 import javax.swing.JPanel
@@ -36,6 +37,7 @@ import javax.swing.tree.DefaultTreeModel
 class OpcacheSettingsPanel(private val project: Project) :
     SimpleToolWindowPanel(false, false),
     RefreshablePanel, Disposable {
+    val fileEditorManager = FileEditorManager.getInstance(project)
     private val progressBar = JProgressBar()
 
     private val treeModel = StructureTreeModel(TokensTreeStructure(RootNode(null)), this)
@@ -90,12 +92,12 @@ class OpcacheSettingsPanel(private val project: Project) :
     }
 
     private fun refreshData() {
-        progressBar.setIndeterminate(true)
-        progressBar.isVisible = true
-        tree.emptyText.text = "Loading..."
+        CoroutineScope(Dispatchers.IO).launch {
+            progressBar.setIndeterminate(true)
+            progressBar.isVisible = true
+            tree.emptyText.text = "Loading..."
 
-
-        project.nonBlocking({ getViewData() }) { result ->
+            val result = getViewData()
             tree.emptyText.text = "Nothing to show"
             rebuildTree(result)
 
@@ -113,12 +115,12 @@ class OpcacheSettingsPanel(private val project: Project) :
         TreeUtil.expandAll(tree)
     }
 
-    private fun getViewData(): AnyNodeList {
+    private suspend fun getViewData(): AnyNodeList {
         val result = AnyNodeList()
-        val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return result
+        val editor = fileEditorManager.selectedTextEditor ?: return result
         val virtualFile = editor.virtualFile ?: return result
 
-        return runBlocking { service.dump(virtualFile) } as? AnyNodeList ?: result
+        return service.dump(virtualFile) as? AnyNodeList ?: result
     }
 
     override fun refresh(project: Project, type: RefreshType) {

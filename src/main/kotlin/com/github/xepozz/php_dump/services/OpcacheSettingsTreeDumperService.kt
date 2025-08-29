@@ -67,7 +67,7 @@ class OpcacheSettingsTreeDumperService(var project: Project) : DumperServiceInte
             }
 //            println("result tree: $tree")
 
-            return@withContext tree
+            tree
         }
     }
 }

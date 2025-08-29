@@ -17,12 +17,12 @@ import kotlinx.coroutines.withContext
 @Service(Service.Level.PROJECT)
 class OpcodesDumperService(var project: Project) : DumperServiceInterface {
     val state = PhpDumpSettingsService.getInstance(project)
-    override suspend fun dump(file: String): Any? {
-        val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
-        val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
-            ?: interpretersManager.interpreters.firstOrNull() ?: return null
+    val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
+    val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
+        ?: interpretersManager.interpreters.firstOrNull()
 
-        val interpreterPath = interpreter.pathToPhpExecutable ?: return null
+    override suspend fun dump(file: String): Any? {
+        val interpreterPath = interpreter?.pathToPhpExecutable ?: return null
         val debugLevel = state.debugLevel.value
         val preloadFile = state.preloadFile
         val command = GeneralCommandLine(buildList {
@@ -63,7 +63,7 @@ class OpcodesDumperService(var project: Project) : DumperServiceInterface {
             }, listOf("-dopcache.enable_cli=1"))
 
 
-            return@withContext output.toString()
+            output.toString()
         }
     }
 }

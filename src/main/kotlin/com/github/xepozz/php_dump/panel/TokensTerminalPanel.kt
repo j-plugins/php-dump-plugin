@@ -18,7 +18,6 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
@@ -95,7 +94,7 @@ class TokensTerminalPanel(
         val virtualFile = editor.virtualFile ?: return
 
         CoroutineScope(Dispatchers.IO).launch {
-            val result = runBlocking { service.dump(virtualFile) }
+            val result = service.dump(virtualFile)
 
             consoleView.clear()
             consoleView.print(result as? String ?: "No output", ConsoleViewContentType.NORMAL_OUTPUT)

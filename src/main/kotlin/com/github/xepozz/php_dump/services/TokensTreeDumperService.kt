@@ -50,7 +50,7 @@ class TokensTreeDumperService(var project: Project) : DumperServiceInterface {
             val tree = TokenParser.parseTokens(jsonString)
 //            println("result tree: $tree")
 
-            return@withContext tree
+            tree
         }
     }
 }
