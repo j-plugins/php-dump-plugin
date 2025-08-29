@@ -29,21 +29,19 @@ import java.awt.BorderLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import javax.swing.JComponent
 import javax.swing.JPanel
 
 class OpcodesTerminalPanel(
     val project: Project,
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel, Disposable {
-    private val viewComponent: JComponent
-    private val service: OpcodesDumperService = project.getService(OpcodesDumperService::class.java)
+    private val service = project.getService(OpcodesDumperService::class.java)
     private val state = PhpDumpSettingsService.getInstance(project)
     private val editorFactory: EditorFactory = EditorFactory.getInstance()
     private val document = editorFactory.createDocument("")
     private val editor = editorFactory.createEditor(document, project, PHPOpFileType.INSTANCE, false) as EditorEx
+    val viewComponent = editor.component
 
     init {
-        viewComponent = editor.component
         configureEditor()
 
         createToolBar()

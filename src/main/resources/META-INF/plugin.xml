@@ -6,7 +6,6 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.jetbrains.php</depends>
-    <depends>com.jetbrains.sh</depends>
     <depends>com.github.xepozz.php_opcodes_language</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
