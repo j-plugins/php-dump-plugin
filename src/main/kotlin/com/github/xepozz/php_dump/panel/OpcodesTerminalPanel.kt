@@ -21,6 +21,9 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiManager
+import com.intellij.testFramework.LightVirtualFile
 import com.jetbrains.php.lang.PhpFileType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,16 +37,30 @@ import javax.swing.JPanel
 class OpcodesTerminalPanel(
     val project: Project,
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel, Disposable {
+    val fileEditorManager = FileEditorManager.getInstance(project)
+
     private val service = project.getService(OpcodesDumperService::class.java)
     private val state = PhpDumpSettingsService.getInstance(project)
     private val editorFactory: EditorFactory = EditorFactory.getInstance()
-    private val document = editorFactory.createDocument("")
-    private val editor = editorFactory.createEditor(document, project, PHPOpFileType.INSTANCE, false) as EditorEx
+
+    private val virtualFile: LightVirtualFile = LightVirtualFile(
+        "opcodes.phpop",
+        PHPOpFileType.INSTANCE,
+        ""
+    )
+    val psiFile = PsiManager.getInstance(project).findFile(virtualFile)!!
+    val document = PsiDocumentManager.getInstance(project).getDocument(psiFile)!!
+
+    private var editor = editorFactory.createEditor(
+        document,
+        project,
+        virtualFile,
+        false
+    ) as EditorEx
     val viewComponent = editor.component
 
     init {
         configureEditor()
-
         createToolBar()
         createContent()
     }
@@ -67,9 +84,7 @@ class OpcodesTerminalPanel(
             add(RefreshAction { refresh(project, RefreshType.MANUAL) })
             add(object : AnAction("Clear Output", "Clear the output", AllIcons.Actions.GC) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    WriteCommandAction.runWriteCommandAction(project) {
-                        document.setText("")
-                    }
+                    setDocumentText(project, "")
                 }
 
                 override fun getActionUpdateThread() = ActionUpdateThread.EDT
@@ -171,7 +186,7 @@ class OpcodesTerminalPanel(
         if (type == RefreshType.AUTO && !state.autoRefresh) {
             return
         }
-        val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
+        val editor = fileEditorManager.selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -179,9 +194,14 @@ class OpcodesTerminalPanel(
 
             val content = result as? String ?: "No output"
 
-            WriteCommandAction.runWriteCommandAction(project) {
-                document.setText(content)
-            }
+            setDocumentText(project, content)
+        }
+    }
+
+    private fun setDocumentText(project: Project, content: String) {
+        WriteCommandAction.runWriteCommandAction(project) {
+            document.setText(content)
+            PsiDocumentManager.getInstance(project).commitDocument(document)
         }
     }
 
@@ -189,4 +209,3 @@ class OpcodesTerminalPanel(
         editorFactory.releaseEditor(editor)
     }
 }
-
