@@ -1,15 +1,12 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.StringBufferProcessAdapter
 import com.github.xepozz.php_dump.command.PathMapper
 import com.github.xepozz.php_dump.command.PhpCommandExecutor
 import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.process.ProcessAdapter
-import com.intellij.execution.process.ProcessEvent
-import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import com.jetbrains.php.config.PhpProjectConfigurationFacade
 import com.jetbrains.php.config.interpreters.PhpInterpretersManagerImpl
 import kotlinx.coroutines.Dispatchers
@@ -53,14 +50,13 @@ class OpcodesDumperService(var project: Project) : DumperServiceInterface {
         return withContext(Dispatchers.IO) {
             val output = StringBuilder()
 
-            PhpCommandExecutor.execute(localFile, phpSnippet, project, object : ProcessAdapter() {
-                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                    when (outputType) {
-                        ProcessOutputTypes.STDERR -> output.append(event.text)
-                        ProcessOutputTypes.STDOUT -> output.append(event.text)
-                    }
-                }
-            }, listOf("-dopcache.enable_cli=1"))
+            PhpCommandExecutor.execute(
+                localFile,
+                phpSnippet,
+                project,
+                StringBufferProcessAdapter(output),
+                listOf("-dopcache.enable_cli=1"),
+            )
 
 
             output.toString()
