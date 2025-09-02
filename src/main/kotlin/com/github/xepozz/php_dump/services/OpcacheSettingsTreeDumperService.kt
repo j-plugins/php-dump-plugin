@@ -1,5 +1,6 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.command.PathMapper
 import com.github.xepozz.php_dump.command.PhpCommandExecutor
 import com.github.xepozz.php_dump.stubs.any_tree.AnyNodeList
 import com.github.xepozz.php_dump.stubs.any_tree.AnyNodeParser
@@ -43,11 +44,12 @@ class OpcacheSettingsTreeDumperService(var project: Project) : DumperServiceInte
                 'status' => opcache_get_status(true),
             ]));
         """.trimIndent()
+        val localFile = PathMapper.map(project, file)
 
         return withContext(Dispatchers.IO) {
             val output = StringBuilder()
 
-            PhpCommandExecutor.execute(file, phpSnippet, project, object : ProcessAdapter() {
+            PhpCommandExecutor.execute(localFile, phpSnippet, project, object : ProcessAdapter() {
                 override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                     when (outputType) {
                         ProcessOutputTypes.STDERR -> output.append(event.text)

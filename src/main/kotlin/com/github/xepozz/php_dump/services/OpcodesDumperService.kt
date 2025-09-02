@@ -1,5 +1,6 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.command.PathMapper
 import com.github.xepozz.php_dump.command.PhpCommandExecutor
 import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.intellij.execution.configurations.GeneralCommandLine
@@ -17,14 +18,15 @@ import kotlinx.coroutines.withContext
 @Service(Service.Level.PROJECT)
 class OpcodesDumperService(var project: Project) : DumperServiceInterface {
     val state = PhpDumpSettingsService.getInstance(project)
-    val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
     val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
-        ?: interpretersManager.interpreters.firstOrNull()
+        ?: PhpInterpretersManagerImpl.getInstance(project).interpreters.firstOrNull()
 
     override suspend fun dump(file: String): Any? {
         val interpreterPath = interpreter?.pathToPhpExecutable ?: return null
         val debugLevel = state.debugLevel.value
         val preloadFile = state.preloadFile
+
+        val localFile = PathMapper.map(project, file)
         val command = GeneralCommandLine(buildList {
             add(interpreterPath)
             add("-l")
@@ -39,10 +41,8 @@ class OpcodesDumperService(var project: Project) : DumperServiceInterface {
             }
 
             add("1>/dev/null")
-            add(file)
+            add(localFile)
         }).commandLineString
-
-
 
         // language=injectablephp
         val phpSnippet = $$"""
@@ -53,7 +53,7 @@ class OpcodesDumperService(var project: Project) : DumperServiceInterface {
         return withContext(Dispatchers.IO) {
             val output = StringBuilder()
 
-            PhpCommandExecutor.execute(file, phpSnippet, project, object : ProcessAdapter() {
+            PhpCommandExecutor.execute(localFile, phpSnippet, project, object : ProcessAdapter() {
                 override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                     when (outputType) {
                         ProcessOutputTypes.STDERR -> output.append(event.text)

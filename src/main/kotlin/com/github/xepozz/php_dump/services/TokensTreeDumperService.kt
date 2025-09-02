@@ -1,5 +1,6 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.command.PathMapper
 import com.github.xepozz.php_dump.command.PhpCommandExecutor
 import com.github.xepozz.php_dump.stubs.token_object.TokenParser
 import com.intellij.execution.process.ProcessAdapter
@@ -30,11 +31,12 @@ class TokensTreeDumperService(var project: Project) : DumperServiceInterface {
                 )
             );
         """.trimIndent()
+        val localFile = PathMapper.map(project, file)
 
         return withContext(Dispatchers.IO) {
             val output = StringBuilder()
 
-            PhpCommandExecutor.execute(file, phpSnippet, project, object : ProcessAdapter() {
+            PhpCommandExecutor.execute(localFile, phpSnippet, project, object : ProcessAdapter() {
                 override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                     when (outputType) {
                         ProcessOutputTypes.STDERR -> output.append(event.text)
