@@ -12,6 +12,7 @@ import com.intellij.ide.util.treeView.AbstractTreeStructure
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.editor.markup.EffectType
 import com.intellij.openapi.editor.markup.HighlighterLayer
 import com.intellij.openapi.editor.markup.HighlighterTargetArea
@@ -134,7 +135,7 @@ class TokenTreePanel(private val project: Project) :
     }
 
     private fun refreshData() {
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.EDT).launch {
             progressBar.setIndeterminate(true)
             progressBar.isVisible = true
             tree.emptyText.text = "Loading..."

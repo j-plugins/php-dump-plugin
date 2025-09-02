@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEx
@@ -28,6 +29,7 @@ import com.jetbrains.php.lang.PhpFileType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.awt.BorderLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
@@ -194,7 +196,9 @@ class OpcodesTerminalPanel(
 
             val content = result as? String ?: "No output"
 
-            setDocumentText(project, content)
+            withContext(Dispatchers.EDT) {
+                setDocumentText(project, content)
+            }
         }
     }
 

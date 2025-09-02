@@ -14,6 +14,7 @@ import com.intellij.ide.util.treeView.AbstractTreeStructure
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
@@ -92,7 +93,7 @@ class OpcacheSettingsPanel(private val project: Project) :
     }
 
     private fun refreshData() {
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.EDT).launch {
             progressBar.setIndeterminate(true)
             progressBar.isVisible = true
             tree.emptyText.text = "Loading..."
