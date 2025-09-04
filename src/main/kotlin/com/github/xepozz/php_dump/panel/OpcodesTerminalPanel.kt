@@ -41,6 +41,7 @@ class OpcodesTerminalPanel(
     val project: Project,
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel, Disposable {
     val fileEditorManager = FileEditorManager.getInstance(project)
+    val documentManager = PsiDocumentManager.getInstance(project)
 
     private val service = project.getService(OpcodesDumperService::class.java)
     private val state = PhpDumpSettingsService.getInstance(project)
@@ -52,7 +53,7 @@ class OpcodesTerminalPanel(
         ""
     )
     val psiFile = PsiManager.getInstance(project).findFile(virtualFile)!!
-    val document = PsiDocumentManager.getInstance(project).getDocument(psiFile)!!
+    val document = documentManager.getDocument(psiFile)!!
 
     private var editor = editorFactory.createEditor(
         document,
@@ -207,7 +208,7 @@ class OpcodesTerminalPanel(
     private fun setDocumentText(project: Project, content: String) {
         WriteCommandAction.runWriteCommandAction(project) {
             document.setText(content)
-            PsiDocumentManager.getInstance(project).commitDocument(document)
+            documentManager.commitDocument(document)
         }
     }
 
