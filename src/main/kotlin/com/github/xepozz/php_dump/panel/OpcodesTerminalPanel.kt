@@ -1,6 +1,7 @@
 package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.PhpDumpIcons
+import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
 import com.github.xepozz.php_dump.actions.RefreshAction
 import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.github.xepozz.php_dump.configuration.PhpOpcacheDebugLevel
@@ -160,6 +161,7 @@ class OpcodesTerminalPanel(
 
                 override fun getActionUpdateThread() = ActionUpdateThread.BGT
             })
+            add(OpenPhpSettingsAction())
         }
 
         val actionToolbar = ActionManager.getInstance().createActionToolbar("Opcodes Toolbar", actionGroup, false)

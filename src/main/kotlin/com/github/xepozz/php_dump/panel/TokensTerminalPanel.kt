@@ -2,6 +2,7 @@ package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.PhpDumpIcons
 import com.github.xepozz.php_dump.actions.ClearConsoleViewAction
+import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
 import com.github.xepozz.php_dump.actions.RefreshAction
 import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.github.xepozz.php_dump.services.TokensDumperService
@@ -64,6 +65,7 @@ class TokensTerminalPanel(
                     }
                 }
             })
+            add(OpenPhpSettingsAction())
         }
 
         val actionToolbar =

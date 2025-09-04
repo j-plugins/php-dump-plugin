@@ -2,6 +2,7 @@ package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.actions.CollapseTreeAction
 import com.github.xepozz.php_dump.actions.ExpandTreeAction
+import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
 import com.github.xepozz.php_dump.actions.RefreshAction
 import com.github.xepozz.php_dump.services.OpcacheSettingsTreeDumperService
 import com.github.xepozz.php_dump.stubs.any_tree.AnyNodeList
@@ -73,6 +74,7 @@ class OpcacheSettingsPanel(private val project: Project) :
             addSeparator()
             add(ExpandTreeAction(tree))
             add(CollapseTreeAction(tree))
+            add(OpenPhpSettingsAction())
         }
 
         val actionToolbar = ActionManager.getInstance().createActionToolbar("Opcache Toolbar", actionGroup, false)

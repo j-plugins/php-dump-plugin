@@ -2,6 +2,7 @@ package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.actions.CollapseTreeAction
 import com.github.xepozz.php_dump.actions.ExpandTreeAction
+import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
 import com.github.xepozz.php_dump.actions.RefreshAction
 import com.github.xepozz.php_dump.services.TokensTreeDumperService
 import com.github.xepozz.php_dump.stubs.token_object.TokensList
@@ -81,6 +82,7 @@ class TokenTreePanel(private val project: Project) :
             addSeparator()
             add(ExpandTreeAction(tree))
             add(CollapseTreeAction(tree))
+            add(OpenPhpSettingsAction())
         }
 
         val actionToolbar = ActionManager.getInstance().createActionToolbar("Tree Toolbar", actionGroup, false)
