@@ -16,7 +16,14 @@
                 id="PHP Dump" anchor="right" secondary="false" icon="/icons/pot.svg"/>
     </extensions>
     <projectListeners>
-        <listener class="com.github.xepozz.php_dump.startup.ProjectFileEditorListener"
-                  topic="com.intellij.openapi.fileEditor.FileEditorManagerListener"/>
+        <listener
+                activeInHeadlessMode="false" activeInTestMode="false"
+                class="com.github.xepozz.php_dump.startup.ProjectFileEditorListener"
+                topic="com.intellij.openapi.fileEditor.FileEditorManagerListener"/>
+        <listener
+                activeInHeadlessMode="false" activeInTestMode="false"
+                class="com.github.xepozz.php_dump.startup.ProjectFileEditorListener"
+                topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"
+        />
     </projectListeners>
 </idea-plugin>

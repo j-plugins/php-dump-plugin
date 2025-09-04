@@ -6,19 +6,24 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener
 
-class ProjectFileEditorListener(val project: Project) : FileEditorManagerListener {
-//    override fun fileClosed(source: FileEditorManager, file: VirtualFile) {
-//        super.fileClosed(source, file)
-//        println("file closed $source, $file")
-//    }
-//    override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
-//        super.fileOpened(source, file)
-//        println("file opened $source, $file")
-//    }
+class ProjectFileEditorListener(val project: Project) : FileEditorManagerListener, ToolWindowManagerListener {
+    companion object {
+        var active = false
+    }
+
+    override fun stateChanged(
+        toolWindowManager: ToolWindowManager,
+        changeType: ToolWindowManagerListener.ToolWindowManagerEventType
+    ) {
+        val phpDumpWindow = toolWindowManager.getToolWindow("PHP Dump") ?: return
+
+        active = phpDumpWindow.isVisible
+    }
 
     override fun selectionChanged(event: FileEditorManagerEvent) {
-        super.selectionChanged(event)
+        if (!active) return
 
         val toolWindowManager = ToolWindowManager.getInstance(project)
         val toolWindow = toolWindowManager.getToolWindow("PHP Dump")
