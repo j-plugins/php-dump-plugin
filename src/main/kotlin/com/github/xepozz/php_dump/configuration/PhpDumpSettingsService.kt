@@ -16,7 +16,7 @@ class PhpDumpSettingsService : SimplePersistentStateComponent<PhpDumpSettingsSer
     class State : BaseState() {
         var debugLevel: String? by string(PhpOpcacheDebugLevel.BEFORE_OPTIMIZATION.value)
         var preloadFile: String? by string(null)
-        var autoRefresh: Boolean by property(true)
+        var autoRefresh: Boolean by property(false)
         var tokensObject: Boolean by property(true)
     }
 
