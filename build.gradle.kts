@@ -2,7 +2,6 @@ import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.nio.charset.Charset
 import java.util.*
 
 plugins {
@@ -18,9 +17,11 @@ plugins {
 group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
 
-val envProperties =  Properties()
-envProperties.load(file(".env").reader(Charset.forName("UTF-8")))
-
+val envProperties by lazy {
+    Properties().apply {
+        load(file(".env").inputStream())
+    }
+}
 // Set the JVM language level used to build the project.
 kotlin {
     jvmToolchain(21)
