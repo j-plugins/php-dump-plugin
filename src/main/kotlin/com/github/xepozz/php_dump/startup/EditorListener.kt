@@ -3,6 +3,7 @@ package com.github.xepozz.php_dump.startup
 import com.github.xepozz.php_dump.services.EditorProvider
 import com.github.xepozz.php_opcodes_language.language.PHPOpFile
 import com.github.xepozz.php_opcodes_language.language.psi.PHPOpBlockName
+import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.event.EditorMouseEvent
 import com.intellij.openapi.editor.event.EditorMouseListener
@@ -68,16 +69,16 @@ class EditorListener : EditorMouseListener {
                             0,
                             block.startOffset - 1,
                             "...",
-                            null,
-                            true,
-                        )
+                            FoldingGroup.newGroup("before block"),
+                            false,
+                        )?.apply { isExpanded = false }
                         createFoldRegion(
                             block.endOffset,
                             block.containingFile.textLength,
                             "...",
-                            null,
-                            true,
-                        )
+                            FoldingGroup.newGroup("after block"),
+                            false,
+                        )?.apply { isExpanded = false }
                     }
                 }
             }
