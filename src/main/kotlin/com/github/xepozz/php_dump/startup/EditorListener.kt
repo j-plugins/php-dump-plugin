@@ -2,7 +2,7 @@ package com.github.xepozz.php_dump.startup
 
 import com.github.xepozz.php_dump.services.EditorProvider
 import com.github.xepozz.php_opcodes_language.language.PHPOpFile
-import com.github.xepozz.php_opcodes_language.language.psi.PHPOpBlockName
+import com.github.xepozz.php_opcodes_language.language.psi.PHPOpBlock
 import com.intellij.openapi.editor.FoldingGroup
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.event.EditorMouseEvent
@@ -39,48 +39,32 @@ class EditorListener : EditorMouseListener {
 
         val psiFile = psiDocumentManager.getPsiFile(opcodesEditor.document) as? PHPOpFile ?: return
 
-        PsiTreeUtil.findChildrenOfType(psiFile, PHPOpBlockName::class.java)
-            .firstOrNull { it.methodName?.name == method.name }
-            ?.let {
-                opcodesEditor.scrollingModel.scrollTo(
-                    opcodesEditor.offsetToLogicalPosition(it.textOffset), ScrollType.CENTER_DOWN
-                )
+        val blocks = PsiTreeUtil.findChildrenOfType(psiFile, PHPOpBlock::class.java)
 
-                val block = it.parent
+        val selectedBlock = blocks.firstOrNull { it.blockName.methodName?.name == method.name } ?: return
 
-//                opcodesEditor.markupModel.apply {
-//                    removeAllHighlighters()
-//                    addRangeHighlighter(
-//                        block.startOffset,
-//                        block.endOffset,
-//                        0,
-//                        TextAttributes().apply {
-//                            effectType = EffectType.BOXED
-//                            effectColor = JBColor.RED
-//                        },
-//                        HighlighterTargetArea.EXACT_RANGE,
-//                    )
-//                }
 
-                opcodesEditor.foldingModel.apply {
-                    runBatchFoldingOperation {
-                        clearFoldRegions()
+        opcodesEditor.foldingModel.apply {
+            runBatchFoldingOperation {
+                clearFoldRegions()
+
+                blocks
+                    .filter { it !== selectedBlock }
+                    .forEach { block ->
                         createFoldRegion(
-                            0,
-                            block.startOffset - 1,
-                            "...",
+                            block.startOffset,
+                            block.endOffset - 1,
+                            block.blockName.name ?: "...",
                             FoldingGroup.newGroup("before block"),
                             false,
                         )?.apply { isExpanded = false }
-                        createFoldRegion(
-                            block.endOffset,
-                            block.containingFile.textLength,
-                            "...",
-                            FoldingGroup.newGroup("after block"),
-                            false,
-                        )?.apply { isExpanded = false }
                     }
-                }
             }
+        }
+
+        opcodesEditor.scrollingModel.scrollTo(
+            opcodesEditor.offsetToLogicalPosition(selectedBlock.textOffset),
+            ScrollType.CENTER_DOWN
+        )
     }
 }
