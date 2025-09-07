@@ -5,8 +5,8 @@ import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
 import com.github.xepozz.php_dump.actions.RefreshAction
 import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.github.xepozz.php_dump.configuration.PhpOpcacheDebugLevel
+import com.github.xepozz.php_dump.services.EditorProvider
 import com.github.xepozz.php_dump.services.OpcodesDumperService
-import com.github.xepozz.php_opcodes_language.language.PHPOpFileType
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
@@ -17,15 +17,12 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiManager
-import com.intellij.testFramework.LightVirtualFile
 import com.jetbrains.php.lang.PhpFileType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,48 +37,24 @@ import javax.swing.JPanel
 class OpcodesTerminalPanel(
     val project: Project,
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel, Disposable {
+
     val fileEditorManager = FileEditorManager.getInstance(project)
     val documentManager = PsiDocumentManager.getInstance(project)
+    val editorFactory = EditorFactory.getInstance()
 
     private val service = project.getService(OpcodesDumperService::class.java)
+    private val editorProvider = project.getService(EditorProvider::class.java)
     private val state = PhpDumpSettingsService.getInstance(project)
-    private val editorFactory: EditorFactory = EditorFactory.getInstance()
 
-    private val virtualFile: LightVirtualFile = LightVirtualFile(
-        "opcodes.phpop",
-        PHPOpFileType.INSTANCE,
-        ""
-    )
-    val psiFile = PsiManager.getInstance(project).findFile(virtualFile)!!
-    val document = documentManager.getDocument(psiFile)!!
-
-    private var editor = editorFactory.createEditor(
-        document,
-        project,
-        virtualFile,
-        false
-    ) as EditorEx
+    val editor = editorProvider.getOrCreateEditor()
     val viewComponent = editor.component
 
     init {
-        configureEditor()
+
         createToolBar()
         createContent()
     }
 
-    private fun configureEditor() {
-        editor.settings.apply {
-            isBlinkCaret = true
-            isCaretRowShown = true
-            isBlockCursor = false
-            isLineMarkerAreaShown = true
-            isAutoCodeFoldingEnabled = true
-            isSmartHome = true
-            isShowIntentionBulb = true
-        }
-
-        editor.setCaretEnabled(true)
-    }
 
     private fun createToolBar() {
         val actionGroup = DefaultActionGroup().apply {
@@ -207,8 +180,8 @@ class OpcodesTerminalPanel(
 
     private fun setDocumentText(project: Project, content: String) {
         WriteCommandAction.runWriteCommandAction(project) {
-            document.setText(content)
-            documentManager.commitDocument(document)
+            editor.document.setText(content)
+            documentManager.commitDocument(editor.document)
         }
     }
 

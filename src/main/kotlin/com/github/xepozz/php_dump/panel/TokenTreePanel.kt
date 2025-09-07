@@ -108,7 +108,7 @@ class TokenTreePanel(private val project: Project) :
         }
     }
 
-    private fun navigation(closestPathForLocation: TreePath?) {
+    private fun navigation(closestPathForLocation: TreePath) {
         val lastUserObject = TreeUtil.getLastUserObject(closestPathForLocation)
         if (lastUserObject is TokenNode) {
             val fileEditor = FileEditorManager.getInstance(project)
