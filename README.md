@@ -1,16 +1,12 @@
 # PHP Dump
 
-![Build](https://github.com/xepozz/php-dump-plugin/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
-
-## Template ToDo list
-- [x] Create a new [IntelliJ Platform Plugin Template][template] project.
-- [ ] Set the `MARKETPLACE_ID` in the above README badges. You can obtain it once the plugin is published to JetBrains Marketplace.
+![Build](https://github.com/j-plugins/php-dump-plugin/workflows/Build/badge.svg)
+[![Version](https://img.shields.io/jetbrains/plugin/v/28100-php-dump.svg)](https://plugins.jetbrains.com/plugin/28100-php-dump)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/28100-php-dump.svg)](https://plugins.jetbrains.com/plugin/28100-php-dump)
 
 <!-- Plugin description -->
 
-[Github](https://github.com/xepozz/php-dump-plugin) | [Telegram](https://t.me/jb_plugins/50) | [Donation](https://github.com/xepozz/xepozz?tab=readme-ov-file#become-a-sponsor)
+[Github](https://github.com/j-plugins/php-dump-plugin) | [Telegram](https://t.me/jb_plugins/50) | [Donation](https://github.com/xepozz/xepozz?tab=readme-ov-file#become-a-sponsor)
 
 ## PHP Dump
 
@@ -53,14 +49,14 @@ Chose the best option for you to say thank you:
   
 - Using JetBrains Marketplace:
 
-  Go to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID) and install it by clicking the <kbd>Install to ...</kbd> button in case your IDE is running.
+  Go to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/28100-php-dump) and install it by clicking the <kbd>Install to ...</kbd> button in case your IDE is running.
 
-  You can also download the [latest release](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID/versions) from JetBrains Marketplace and install it manually using
+  You can also download the [latest release](https://plugins.jetbrains.com/plugin/28100-php-dump/versions) from JetBrains Marketplace and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
 - Manually:
 
-  Download the [latest release](https://github.com/xepozz/php-dump-plugin/releases/latest) and install it manually using
+  Download the [latest release](https://github.com/j-plugins/php-dump-plugin/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
 
