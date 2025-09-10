@@ -6,6 +6,7 @@ import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.jetbrains.php.config.PhpProjectConfigurationFacade
@@ -22,8 +23,6 @@ object PhpCommandExecutor {
         processListener: ProcessAdapter,
         processArguments: List<String> = emptyList()
     ) {
-        println("run php command $file, $phpSnippet")
-
         val arguments = buildList {
             addAll(processArguments)
             add("-r")
@@ -66,7 +65,7 @@ object PhpCommandExecutor {
                     .withRedirectErrorStream(false)
                     .apply { addParameters(arguments) }
 
-                println("cmd: ${command.commandLineString}")
+                thisLogger().info("cmd: ${command.commandLineString}")
                 processHandler = manager.getRemoteProcessHandler(
                     project,
                     data,
@@ -75,7 +74,7 @@ object PhpCommandExecutor {
                     *phpCommandSettings.additionalMappings
                 )
             } else {
-                println("cmd: ${command.commandLineString}")
+                thisLogger().info("cmd: ${command.commandLineString}")
                 processHandler = KillableColoredProcessHandler.Silent(command)
                 processHandler.setShouldKillProcessSoftly(false)
                 processHandler.setShouldDestroyProcessRecursively(true)
