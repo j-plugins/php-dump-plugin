@@ -51,7 +51,7 @@ class OpcacheSettingsTreeDumperService(var project: Project) : DumperServiceInte
                 phpSnippet,
                 project,
                 StringBufferProcessAdapter(output),
-                listOf("-dopcache.enable_cli=1"),
+                ("-d opcache.enable_cli=1".split(" ")),
             )
 
             val jsonString = output.toString()
