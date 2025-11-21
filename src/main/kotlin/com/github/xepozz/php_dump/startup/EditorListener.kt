@@ -10,8 +10,6 @@ import com.intellij.openapi.editor.event.EditorMouseListener
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.endOffset
-import com.intellij.psi.util.startOffset
 import com.jetbrains.php.lang.psi.elements.Method
 
 
@@ -52,8 +50,8 @@ class EditorListener : EditorMouseListener {
                     .filter { it !== selectedBlock }
                     .forEach { block ->
                         createFoldRegion(
-                            block.startOffset,
-                            block.endOffset - 1,
+                            block.textRange.startOffset,
+                            block.textRange.endOffset - 1,
                             block.blockName.name ?: "...",
                             FoldingGroup.newGroup("before block"),
                             false,
