@@ -23,6 +23,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.util.asSafely
 import com.jetbrains.php.lang.PhpFileType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -170,7 +171,10 @@ class OpcodesTerminalPanel(
         CoroutineScope(Dispatchers.IO).launch {
             val result = service.dump(virtualFile)
 
-            val content = result as? String ?: "No output"
+            val content = result
+                .asSafely<String>()
+                ?.replace("\r\n", "\n")
+                ?: "No output"
 
             withContext(Dispatchers.EDT) {
                 setDocumentText(project, content)
