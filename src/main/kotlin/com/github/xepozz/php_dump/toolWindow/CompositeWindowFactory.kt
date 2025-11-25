@@ -1,12 +1,12 @@
-package com.github.xepozz.php_dump
+package com.github.xepozz.php_dump.toolWindow
 
 import com.github.xepozz.php_dump.actions.CreateTabAction
-import com.github.xepozz.php_dump.panel.OpcacheSettingsPanel
-import com.github.xepozz.php_dump.panel.OpcodesTerminalPanel
-import com.github.xepozz.php_dump.panel.TokenTreePanel
-import com.github.xepozz.php_dump.panel.TokensTerminalPanel
-import com.github.xepozz.php_dump.panel.tabs.CompositeWindowTabsState
-import com.github.xepozz.php_dump.panel.tabs.TabsUtil
+import com.github.xepozz.php_dump.toolWindow.panel.OpcacheSettingsPanel
+import com.github.xepozz.php_dump.toolWindow.panel.OpcodesTerminalPanel
+import com.github.xepozz.php_dump.toolWindow.panel.TokenTreePanel
+import com.github.xepozz.php_dump.toolWindow.panel.TokensTerminalPanel
+import com.github.xepozz.php_dump.toolWindow.tabs.CompositeWindowTabsState
+import com.github.xepozz.php_dump.toolWindow.tabs.TabsUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -22,7 +22,7 @@ open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
         val toolWindow = toolWindow as ToolWindowEx
         val contentFactory = ContentFactory.getInstance()
         val contentManager = toolWindow.contentManager as ContentManagerImpl
-        println("can close: ${contentManager.canCloseContents()}")
+
         val tabsState = CompositeWindowTabsState.getInstance(project)
 
         val opcodesTerminalLayout = OpcodesTerminalPanel(project)

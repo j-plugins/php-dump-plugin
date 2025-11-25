@@ -12,7 +12,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
-                factoryClass="com.github.xepozz.php_dump.CompositeWindowFactory"
+                factoryClass="com.github.xepozz.php_dump.toolWindow.CompositeWindowFactory"
                 canCloseContents="true"
                 id="PHP Dump" anchor="right" secondary="false" icon="/icons/pot.svg"/>
         <editorFactoryMouseListener

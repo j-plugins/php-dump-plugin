@@ -1,9 +1,11 @@
-package com.github.xepozz.php_dump.panel.tabs
+package com.github.xepozz.php_dump.toolWindow.tabs
 
-import com.github.xepozz.php_dump.panel.CustomTreePanel
+import com.github.xepozz.php_dump.toolWindow.panel.CustomTreePanel
 import com.intellij.openapi.project.Project
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.content.ContentManager
+import com.intellij.ui.content.ContentManagerEvent
+import com.intellij.ui.content.ContentManagerListener
 
 object TabsUtil {
     // language=injectablephp
@@ -47,9 +49,15 @@ object TabsUtil {
 
         val panel = CustomTreePanel(tabConfig, project)
         val content = contentFactory.createContent(panel, tabConfig.name, false)
-        content.isCloseable = true
 
         contentManager.addContent(content)
+        contentManager.addContentManagerListener(object : ContentManagerListener{
+            override fun contentRemoved(event: ContentManagerEvent) {
+                if (event.content === content) {
+                    tabsState.state.tabs.remove(tabConfig)
+                }
+            }
+        })
         contentManager.setSelectedContent(content)
     }
 }

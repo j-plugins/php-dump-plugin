@@ -1,4 +1,4 @@
-package com.github.xepozz.php_dump.panel
+package com.github.xepozz.php_dump.toolWindow.panel
 
 import com.github.xepozz.php_dump.PhpDumpIcons
 import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
@@ -136,6 +136,7 @@ class OpcodesTerminalPanel(
 
                 override fun getActionUpdateThread() = ActionUpdateThread.BGT
             })
+            addSeparator()
             add(OpenPhpSettingsAction())
         }
 

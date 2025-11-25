@@ -1,24 +1,29 @@
-package com.github.xepozz.php_dump.panel
+package com.github.xepozz.php_dump.toolWindow.panel
 
 import com.github.xepozz.php_dump.actions.CollapseTreeAction
 import com.github.xepozz.php_dump.actions.ExpandTreeAction
 import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
 import com.github.xepozz.php_dump.actions.RefreshAction
-import com.github.xepozz.php_dump.services.OpcacheSettingsTreeDumperService
-import com.github.xepozz.php_dump.stubs.any_tree.AnyNodeList
-import com.github.xepozz.php_dump.stubs.any_tree.AnyRootNode
-import com.github.xepozz.php_dump.stubs.any_tree.AnyTreeStructure
-import com.github.xepozz.php_dump.stubs.any_tree.LeafNode
+import com.github.xepozz.php_dump.services.TokensTreeDumperService
+import com.github.xepozz.php_dump.stubs.token_object.TokensList
 import com.github.xepozz.php_dump.tree.RootNode
+import com.github.xepozz.php_dump.tree.TokenNode
 import com.github.xepozz.php_dump.tree.TokensTreeStructure
 import com.intellij.ide.util.treeView.AbstractTreeStructure
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.editor.markup.EffectType
+import com.intellij.openapi.editor.markup.HighlighterLayer
+import com.intellij.openapi.editor.markup.HighlighterTargetArea
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.pom.Navigatable
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.ui.JBColor
 import com.intellij.ui.TreeUIHelper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.tree.AsyncTreeModel
@@ -35,8 +40,9 @@ import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreePath
 
-class OpcacheSettingsPanel(private val project: Project) :
+class TokenTreePanel(private val project: Project) :
     SimpleToolWindowPanel(false, false),
     RefreshablePanel, Disposable {
     val fileEditorManager = FileEditorManager.getInstance(project)
@@ -44,19 +50,19 @@ class OpcacheSettingsPanel(private val project: Project) :
 
     private val treeModel = StructureTreeModel(TokensTreeStructure(RootNode(null)), this)
     private val tree = Tree(DefaultTreeModel(DefaultMutableTreeNode())).apply {
-        setModel(AsyncTreeModel(treeModel, this@OpcacheSettingsPanel))
+        setModel(AsyncTreeModel(treeModel, this@TokenTreePanel))
         isRootVisible = true
         showsRootHandles = true
 
         TreeUIHelper.getInstance()
             .installTreeSpeedSearch(this, { path ->
                 val treeNode = path.lastPathComponent as? DefaultMutableTreeNode
-                val tokenNode = treeNode?.userObject as? LeafNode
+                val tokenNode = treeNode?.userObject as? TokenNode
 
                 tokenNode?.node?.value
             }, true)
     }
-    val service: OpcacheSettingsTreeDumperService = project.getService(OpcacheSettingsTreeDumperService::class.java)
+    val service: TokensTreeDumperService = project.getService(TokensTreeDumperService::class.java)
 
 
     init {
@@ -65,19 +71,22 @@ class OpcacheSettingsPanel(private val project: Project) :
         createToolbar()
         createContent()
 
+        addTreeListeners()
+
         SwingUtilities.invokeLater { refreshData() }
     }
 
     fun createToolbar() {
         val actionGroup = DefaultActionGroup().apply {
-            add(RefreshAction { refresh(project, RefreshType.MANUAL) })
+            add(RefreshAction { refreshData() })
             addSeparator()
             add(ExpandTreeAction(tree))
             add(CollapseTreeAction(tree))
+            addSeparator()
             add(OpenPhpSettingsAction())
         }
 
-        val actionToolbar = ActionManager.getInstance().createActionToolbar("Opcache Toolbar", actionGroup, false)
+        val actionToolbar = ActionManager.getInstance().createActionToolbar("Tree Toolbar", actionGroup, false)
         actionToolbar.targetComponent = this
 
         val toolBarPanel = JPanel(GridLayout())
@@ -92,6 +101,40 @@ class OpcacheSettingsPanel(private val project: Project) :
         responsivePanel.add(JBScrollPane(tree), BorderLayout.CENTER)
 
         setContent(responsivePanel)
+    }
+
+    private fun addTreeListeners() {
+        tree.addTreeSelectionListener { event ->
+            event.path?.let { navigation(it) }
+        }
+    }
+
+    private fun navigation(closestPathForLocation: TreePath) {
+        val lastUserObject = TreeUtil.getLastUserObject(closestPathForLocation)
+        if (lastUserObject is TokenNode) {
+            val fileEditor = FileEditorManager.getInstance(project)
+            val textEditor = fileEditor.selectedTextEditor!!
+            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(textEditor.document)
+            val node = lastUserObject.node
+            val element = psiFile?.findElementAt(node.pos)
+            if (element is Navigatable) {
+                val markupModel = textEditor.markupModel
+                val textAttributes = TextAttributes().apply {
+                    effectType = EffectType.BOXED
+                    effectColor = JBColor.RED
+                    backgroundColor = null
+                }
+
+                markupModel.removeAllHighlighters()
+                markupModel.addRangeHighlighter(
+                    node.pos,
+                    node.endPos,
+                    HighlighterLayer.SELECTION + 1,
+                    textAttributes,
+                    HighlighterTargetArea.EXACT_RANGE
+                )
+            }
+        }
     }
 
     private fun refreshData() {
@@ -109,8 +152,8 @@ class OpcacheSettingsPanel(private val project: Project) :
         }
     }
 
-    private fun rebuildTree(list: AnyNodeList?) {
-        val treeModel = StructureTreeModel<AbstractTreeStructure>(AnyTreeStructure(AnyRootNode(list)), this)
+    private fun rebuildTree(list: TokensList?) {
+        val treeModel = StructureTreeModel<AbstractTreeStructure>(TokensTreeStructure(RootNode(list)), this)
         tree.setModel(AsyncTreeModel(treeModel, this))
         tree.setRootVisible(false)
         treeModel.invalidateAsync()
@@ -118,12 +161,15 @@ class OpcacheSettingsPanel(private val project: Project) :
         TreeUtil.expandAll(tree)
     }
 
-    private suspend fun getViewData(): AnyNodeList {
-        val result = AnyNodeList()
+    private suspend fun getViewData(): TokensList {
+        val result = TokensList()
         val editor = fileEditorManager.selectedTextEditor ?: return result
         val virtualFile = editor.virtualFile ?: return result
 
-        return service.dump(virtualFile) as? AnyNodeList ?: result
+        val runBlocking = service.dump(virtualFile)
+//        println("result is $runBlocking")
+
+        return runBlocking as? TokensList ?: result
     }
 
     override fun refresh(project: Project, type: RefreshType) {

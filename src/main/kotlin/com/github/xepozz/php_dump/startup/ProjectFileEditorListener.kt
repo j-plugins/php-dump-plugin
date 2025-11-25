@@ -1,7 +1,7 @@
 package com.github.xepozz.php_dump.startup
 
-import com.github.xepozz.php_dump.panel.RefreshType
-import com.github.xepozz.php_dump.panel.RefreshablePanel
+import com.github.xepozz.php_dump.toolWindow.panel.RefreshType
+import com.github.xepozz.php_dump.toolWindow.panel.RefreshablePanel
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project

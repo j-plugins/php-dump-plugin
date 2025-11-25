@@ -1,4 +1,4 @@
-package com.github.xepozz.php_dump.panel
+package com.github.xepozz.php_dump.toolWindow.panel
 
 import com.intellij.openapi.project.Project
 

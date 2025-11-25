@@ -1,12 +1,12 @@
-package com.github.xepozz.php_dump.panel
+package com.github.xepozz.php_dump.toolWindow.panel
 
 import com.github.xepozz.php_dump.actions.CollapseTreeAction
 import com.github.xepozz.php_dump.actions.ExpandTreeAction
 import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
 import com.github.xepozz.php_dump.actions.RefreshAction
-import com.github.xepozz.php_dump.panel.tabs.CompositeWindowTabsState
 import com.github.xepozz.php_dump.services.CustomTreeDumperService
 import com.github.xepozz.php_dump.stubs.token_object.TokensList
+import com.github.xepozz.php_dump.toolWindow.tabs.CompositeWindowTabsState
 import com.github.xepozz.php_dump.tree.RootNode
 import com.github.xepozz.php_dump.tree.TokenNode
 import com.github.xepozz.php_dump.tree.TokensTreeStructure
@@ -86,6 +86,7 @@ class CustomTreePanel(
             addSeparator()
             add(ExpandTreeAction(tree))
             add(CollapseTreeAction(tree))
+            addSeparator()
             add(OpenPhpSettingsAction())
         }
 

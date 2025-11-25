@@ -1,4 +1,4 @@
-package com.github.xepozz.php_dump.panel.tabs
+package com.github.xepozz.php_dump.toolWindow.tabs
 
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service

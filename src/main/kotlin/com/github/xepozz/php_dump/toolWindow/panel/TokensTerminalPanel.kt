@@ -1,4 +1,4 @@
-package com.github.xepozz.php_dump.panel
+package com.github.xepozz.php_dump.toolWindow.panel
 
 import com.github.xepozz.php_dump.PhpDumpIcons
 import com.github.xepozz.php_dump.actions.ClearConsoleViewAction
@@ -65,6 +65,7 @@ class TokensTerminalPanel(
                     }
                 }
             })
+            addSeparator()
             add(OpenPhpSettingsAction())
         }
 
