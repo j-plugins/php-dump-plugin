@@ -37,6 +37,7 @@ object TabsUtil {
             name = tabName,
             snippet = SNIPPET,
         )
+        tabsState.state.tabs.add(tabConfig)
 
         createTab(project, contentManager, tabConfig)
     }
@@ -44,7 +45,6 @@ object TabsUtil {
     fun createTab(project: Project, contentManager: ContentManager, tabConfig: CompositeWindowTabsState.TabConfig) {
         val contentFactory = ContentFactory.getInstance()
         val tabsState = CompositeWindowTabsState.getInstance(project)
-        tabsState.state.tabs.add(tabConfig)
 
         val panel = CustomTreePanel(project, tabConfig)
         val content = contentFactory.createContent(panel, tabConfig.name, false)
