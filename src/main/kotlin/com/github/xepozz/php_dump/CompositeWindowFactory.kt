@@ -21,37 +21,29 @@ open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
         val tokenTreeLayout = TokenTreePanel(project)
 
         contentFactory.apply {
-            this.createContent(opcodesTerminalLayout, "Opcodes", false).apply {
-                contentManager.addContent(
-                    this.apply {
-                        this.isPinnable = true
-                        this.isCloseable = false
-                    }
-                )
+            createContent(opcodesTerminalLayout, "Opcodes", false).apply {
+                isPinnable = true
+                isCloseable = false
+
+                contentManager.addContent(this)
             }
-            this.createContent(opcodesSettingsLayout, "Opcache", false).apply {
-                contentManager.addContent(
-                    this.apply {
-                        this.isPinnable = true
-                        this.isCloseable = false
-                    }
-                )
+            createContent(opcodesSettingsLayout, "Opcache", false).apply {
+                isPinnable = true
+                isCloseable = false
+
+                contentManager.addContent(this)
             }
-            this.createContent(tokensTerminalLayout, "Plain Tokens", false).apply {
-                contentManager.addContent(
-                    this.apply {
-                        this.isPinnable = true
-                        this.isCloseable = false
-                    }
-                )
+            createContent(tokensTerminalLayout, "Plain Tokens", false).apply {
+                isPinnable = true
+                isCloseable = false
+
+                contentManager.addContent(this)
             }
-            this.createContent(tokenTreeLayout.component, "Tokens Tree", false).apply {
-                contentManager.addContent(
-                    this.apply {
-                        this.isPinnable = true
-                        this.isCloseable = false
-                    }
-                )
+            createContent(tokenTreeLayout.component, "Tokens Tree", false).apply {
+                isPinnable = true
+                isCloseable = false
+
+                contentManager.addContent(this)
             }
         }
     }
