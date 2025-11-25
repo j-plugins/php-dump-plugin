@@ -3,9 +3,9 @@ package com.github.xepozz.php_dump.command
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.KillableColoredProcessHandler
-import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
+import com.intellij.execution.process.ProcessListener
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
@@ -20,7 +20,7 @@ object PhpCommandExecutor {
         file: String,
         phpSnippet: String,
         project: Project,
-        processListener: ProcessAdapter,
+        processListener: ProcessListener,
         processArguments: List<String> = emptyList()
     ) {
         val arguments = buildList {
