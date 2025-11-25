@@ -1,6 +1,7 @@
 package com.github.xepozz.php_dump.toolWindow.panel
 
 import com.github.xepozz.php_dump.actions.CollapseTreeAction
+import com.github.xepozz.php_dump.actions.EditPhpSnippetAction
 import com.github.xepozz.php_dump.actions.ExpandTreeAction
 import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
 import com.github.xepozz.php_dump.actions.RefreshAction
@@ -44,8 +45,8 @@ import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
 
 class CustomTreePanel(
-    private val tabConfig: CompositeWindowTabsState.TabConfig,
     private val project: Project,
+    private val tabConfig: CompositeWindowTabsState.TabConfig,
 ) :
     SimpleToolWindowPanel(false, false),
     RefreshablePanel, Disposable {
@@ -87,6 +88,9 @@ class CustomTreePanel(
             add(ExpandTreeAction(tree))
             add(CollapseTreeAction(tree))
             addSeparator()
+            add(EditPhpSnippetAction(project, tabConfig) { snippet ->
+                tabConfig.snippet = snippet
+            })
             add(OpenPhpSettingsAction())
         }
 
@@ -171,8 +175,8 @@ class CustomTreePanel(
         val virtualFile = editor.virtualFile ?: return result
 
         service.phpSnippet = tabConfig.snippet
+
         val runBlocking = service.dump(virtualFile)
-//        println("result is $runBlocking")
 
         return runBlocking as? TokensList ?: result
     }

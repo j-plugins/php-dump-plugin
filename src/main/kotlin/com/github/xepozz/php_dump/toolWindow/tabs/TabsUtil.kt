@@ -11,7 +11,6 @@ object TabsUtil {
     // language=injectablephp
     private val SNIPPET = $$"""
         /**
-         * $argv[0] – Program name
          * $argv[1] – File path 
          */
         
@@ -47,11 +46,11 @@ object TabsUtil {
         val tabsState = CompositeWindowTabsState.getInstance(project)
         tabsState.state.tabs.add(tabConfig)
 
-        val panel = CustomTreePanel(tabConfig, project)
+        val panel = CustomTreePanel(project, tabConfig)
         val content = contentFactory.createContent(panel, tabConfig.name, false)
 
         contentManager.addContent(content)
-        contentManager.addContentManagerListener(object : ContentManagerListener{
+        contentManager.addContentManagerListener(object : ContentManagerListener {
             override fun contentRemoved(event: ContentManagerEvent) {
                 if (event.content === content) {
                     tabsState.state.tabs.remove(tabConfig)
