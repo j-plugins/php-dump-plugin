@@ -1,0 +1,55 @@
+package com.github.xepozz.php_dump.panel.tabs
+
+import com.github.xepozz.php_dump.panel.CustomTreePanel
+import com.intellij.openapi.project.Project
+import com.intellij.ui.content.ContentFactory
+import com.intellij.ui.content.ContentManager
+
+object TabsUtil {
+    // language=injectablephp
+    private val SNIPPET = $$"""
+        /**
+         * $argv[0] – Program name
+         * $argv[1] – File path 
+         */
+        
+        echo json_encode(
+            array_map(
+                function (PhpToken $token) {
+                    return [
+                        'line' => $token->line,
+                        'pos' => $token->pos,
+                        'name' => $token->getTokenName(),
+                        'value' => $token->text,
+                    ];
+                },
+                \PhpToken::tokenize(file_get_contents($argv[1])),
+            )
+        );
+        """.trimIndent()
+
+    fun createTab(project: Project, contentManager: ContentManager) {
+        val tabsState = CompositeWindowTabsState.getInstance(project)
+        val tabNumber = tabsState.state.tabs.size + 1
+        val tabName = "Dump $tabNumber"
+        val tabConfig = CompositeWindowTabsState.TabConfig(
+            name = tabName,
+            snippet = SNIPPET,
+        )
+
+        createTab(project, contentManager, tabConfig)
+    }
+
+    fun createTab(project: Project, contentManager: ContentManager, tabConfig: CompositeWindowTabsState.TabConfig) {
+        val contentFactory = ContentFactory.getInstance()
+        val tabsState = CompositeWindowTabsState.getInstance(project)
+        tabsState.state.tabs.add(tabConfig)
+
+        val panel = CustomTreePanel(tabConfig, project)
+        val content = contentFactory.createContent(panel, tabConfig.name, false)
+        content.isCloseable = true
+
+        contentManager.addContent(content)
+        contentManager.setSelectedContent(content)
+    }
+}
