@@ -34,7 +34,7 @@ object PhpCommandExecutor {
         executeCommand(project, arguments, processListener)
     }
 
-    private suspend fun executeCommand(project: Project, arguments: List<String>, processListener: ProcessAdapter) =
+    private suspend fun executeCommand(project: Project, arguments: List<String>, processListener: ProcessListener) =
         suspendCoroutine<Int> { continuation ->
             val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
             val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
@@ -81,7 +81,7 @@ object PhpCommandExecutor {
             }
 
             processHandler.addProcessListener(processListener)
-            processHandler.addProcessListener(object : ProcessAdapter() {
+            processHandler.addProcessListener(object : ProcessListener {
                 override fun processTerminated(event: ProcessEvent) {
                     continuation.resumeWith(Result.success(event.exitCode))
                 }
