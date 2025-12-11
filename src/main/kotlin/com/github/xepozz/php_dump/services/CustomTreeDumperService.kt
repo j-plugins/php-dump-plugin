@@ -30,7 +30,7 @@ class CustomTreeDumperService(var project: Project) : DumperServiceInterface {
 
             val result = CustomDumpResult()
 
-            result.raw = capture.output.stdout
+            result.raw = capture.output.stdout + "\n" + capture.output.stderr
 //            println("jsonString: $jsonString")
 
             try {
