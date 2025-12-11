@@ -1,9 +1,9 @@
 package com.github.xepozz.php_dump.services
 
-import com.github.xepozz.php_dump.StringBufferProcessAdapter
 import com.github.xepozz.php_dump.command.PathMapper
 import com.github.xepozz.php_dump.command.PhpCommandExecutor
 import com.github.xepozz.php_dump.stubs.token_object.TokenParser
+import com.intellij.execution.process.CapturingProcessAdapter
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
@@ -31,17 +31,16 @@ class TokensTreeDumperService(var project: Project) : DumperServiceInterface {
         val localFile = PathMapper.map(project, file)
 
         return withContext(Dispatchers.IO) {
-            val output = StringBuilder()
+            val capture = CapturingProcessAdapter()
 
             PhpCommandExecutor.execute(
                 localFile,
                 phpSnippet,
                 project,
-                StringBufferProcessAdapter(output),
+                capture,
             )
 
-
-            val jsonString = output.toString()
+            val jsonString = capture.output.stdout
 //            println("jsonString: $jsonString")
 
             val tree = TokenParser.parseTokens(jsonString)

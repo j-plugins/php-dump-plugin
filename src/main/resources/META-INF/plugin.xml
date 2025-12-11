@@ -17,6 +17,12 @@
                 id="PHP Dump" anchor="right" secondary="false" icon="/icons/pot.svg"/>
         <editorFactoryMouseListener
                 implementation="com.github.xepozz.php_dump.startup.EditorListener"/>
+        <notificationGroup
+                id="PHP Dump Errors"
+                displayType="BALLOON"
+                hideFromSettings="true"
+                isLogByDefault="true"
+        />
     </extensions>
     <projectListeners>
         <listener

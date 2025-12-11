@@ -5,17 +5,24 @@ import com.github.xepozz.php_dump.actions.EditPhpSnippetAction
 import com.github.xepozz.php_dump.actions.ExpandTreeAction
 import com.github.xepozz.php_dump.actions.OpenPhpSettingsAction
 import com.github.xepozz.php_dump.actions.RefreshAction
+import com.github.xepozz.php_dump.notification.NotificationUtil
+import com.github.xepozz.php_dump.services.CustomDumpResult
 import com.github.xepozz.php_dump.services.CustomTreeDumperService
+import com.github.xepozz.php_dump.services.EditorProvider
 import com.github.xepozz.php_dump.stubs.token_object.TokensList
 import com.github.xepozz.php_dump.toolWindow.tabs.CompositeWindowTabsState
 import com.github.xepozz.php_dump.tree.RootNode
 import com.github.xepozz.php_dump.tree.TokenNode
 import com.github.xepozz.php_dump.tree.TokensTreeStructure
+import com.intellij.icons.AllIcons
 import com.intellij.ide.util.treeView.AbstractTreeStructure
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.markup.EffectType
 import com.intellij.openapi.editor.markup.HighlighterLayer
 import com.intellij.openapi.editor.markup.HighlighterTargetArea
@@ -23,8 +30,10 @@ import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.openapi.vfs.findDocument
 import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.JBColor
 import com.intellij.ui.TreeUIHelper
 import com.intellij.ui.components.JBScrollPane
@@ -37,6 +46,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.GridLayout
+import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
@@ -53,6 +63,7 @@ class CustomTreePanel(
     val fileEditorManager = FileEditorManager.getInstance(project)
     private val progressBar = JProgressBar()
 
+    var rawOutput = ""
     private val treeModel = StructureTreeModel(TokensTreeStructure(RootNode(null)), this)
     private val tree = Tree(DefaultTreeModel(DefaultMutableTreeNode())).apply {
         setModel(AsyncTreeModel(treeModel, this@CustomTreePanel))
@@ -68,7 +79,12 @@ class CustomTreePanel(
             }, true)
     }
     val service: CustomTreeDumperService = project.getService(CustomTreeDumperService::class.java)
+    val editorProvider: EditorProvider = project.getService(EditorProvider::class.java)
 
+    val scrollPane = JBScrollPane(tree)
+    var contentPanel: JComponent = JPanel(BorderLayout()).apply { add(scrollPane) }
+    val rawVirtualFile = LightVirtualFile("Raw Output", "")
+    val rawPanel = editorProvider.getOrCreateEditorFor(rawVirtualFile).component
 
     init {
         treeModel.invalidateAsync()
@@ -81,6 +97,7 @@ class CustomTreePanel(
         SwingUtilities.invokeLater { refreshData() }
     }
 
+    private var showRawOutput = false
     fun createToolbar() {
         val actionGroup = DefaultActionGroup().apply {
             add(RefreshAction { refreshData() })
@@ -90,6 +107,20 @@ class CustomTreePanel(
             addSeparator()
             add(EditPhpSnippetAction(project, tabConfig) { snippet ->
                 tabConfig.snippet = snippet
+            })
+            add(object :
+                ToggleAction("Use Object Tokens", "Switches engine to dump lexical tokens", AllIcons.FileTypes.Json) {
+                override fun isSelected(event: AnActionEvent): Boolean = showRawOutput
+
+                override fun setSelected(event: AnActionEvent, value: Boolean) {
+                    println("switch content")
+                    event.presentation.icon = if (value) AllIcons.FileTypes.Json else AllIcons.FileTypes.Text
+                    showRawOutput = value
+                    contentPanel.components.forEach { contentPanel.remove(it) }
+                    contentPanel.add(if (showRawOutput) rawPanel else scrollPane)
+                    SwingUtilities.invokeLater { contentPanel.repaint() }
+                }
+
             })
             add(OpenPhpSettingsAction())
         }
@@ -106,7 +137,7 @@ class CustomTreePanel(
     private fun createContent() {
         val responsivePanel = JPanel(BorderLayout())
         responsivePanel.add(progressBar, BorderLayout.NORTH)
-        responsivePanel.add(JBScrollPane(tree), BorderLayout.CENTER)
+        responsivePanel.add(contentPanel, BorderLayout.CENTER)
 
         setContent(responsivePanel)
     }
@@ -153,7 +184,8 @@ class CustomTreePanel(
 
             val result = getViewData()
             tree.emptyText.text = "Nothing to show"
-            rebuildTree(result)
+            rebuildTree(result.tokens)
+            rawOutput = result.raw
 
             progressBar.setIndeterminate(false)
             progressBar.isVisible = false
@@ -169,16 +201,33 @@ class CustomTreePanel(
         TreeUtil.expandAll(tree)
     }
 
-    private suspend fun getViewData(): TokensList {
-        val result = TokensList()
+    private suspend fun getViewData(): CustomDumpResult {
+        val result = CustomDumpResult()
         val editor = fileEditorManager.selectedTextEditor ?: return result
         val virtualFile = editor.virtualFile ?: return result
 
         service.phpSnippet = tabConfig.snippet
 
-        val runBlocking = service.dump(virtualFile)
+        val runResult = service.dump(virtualFile) as CustomDumpResult
 
-        return runBlocking as? TokensList ?: result
+        val error = runResult.error
+        val document = rawVirtualFile.findDocument()
+        if (document != null) {
+            runWriteAction {
+                document.setText(runResult.raw ?: "")
+            }
+        }
+
+        if (error != null) {
+            NotificationUtil
+                .sendNotification(
+                    project,
+                    "Error ${error.javaClass}",
+                    error.message ?: "Unknown error",
+                )
+        }
+
+        return runResult
     }
 
     override fun refresh(project: Project, type: RefreshType) {

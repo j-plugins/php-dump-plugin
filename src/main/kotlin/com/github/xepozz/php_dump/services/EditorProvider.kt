@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
@@ -13,26 +14,36 @@ import com.intellij.testFramework.LightVirtualFile
 @Service(Service.Level.PROJECT)
 class EditorProvider(var project: Project) {
     companion object {
-        val editorId = Key.create<Boolean>("opcodes.editor.id")
+        val opcodesEditorId = Key.create<Boolean>("opcodes.editor.id")
     }
 
     val documentManager = PsiDocumentManager.getInstance(project)
     val editorFactory = EditorFactory.getInstance()
 
-    var editor: EditorEx? = null
+    var editors = mutableMapOf<Key<*>, EditorEx>()
+    var editorsByFile = mutableMapOf<VirtualFile, EditorEx>()
+    var virtualFilesByEditorId = mutableMapOf<Key<*>, VirtualFile>()
 
-    fun getOrCreateEditor(): EditorEx = synchronized(this) {
-        editor?.let { return it }
+    fun getOrCreateEditor(editorId: Key<Boolean>): EditorEx =
+        synchronized(this) {
+            editors.getOrPut(editorId) {
+                val virtualFile = virtualFilesByEditorId.getOrPut(editorId) {
+                    LightVirtualFile("opcodes.phpop", PHPOpFileType.INSTANCE, "")
+                }
+                createEditor(virtualFile)
+            }
+        }
 
-        val virtualFile = LightVirtualFile(
-            "opcodes.phpop",
-            PHPOpFileType.INSTANCE,
-            ""
-        )
+    fun getOrCreateEditorFor(virtualFile: VirtualFile): EditorEx =
+        synchronized(this) {
+            editorsByFile.getOrPut(virtualFile) { createEditor(virtualFile) }
+        }
+
+    private fun createEditor(virtualFile: VirtualFile): EditorEx {
         val psiFile = PsiManager.getInstance(project).findFile(virtualFile)!!
         val document = documentManager.getDocument(psiFile)!!
 
-        return@synchronized (editorFactory.createEditor(document, project, virtualFile, false) as EditorEx)
+        return (editorFactory.createEditor(document, project, virtualFile, false) as EditorEx)
             .apply {
                 settings.apply {
                     isBlinkCaret = true
@@ -45,9 +56,6 @@ class EditorProvider(var project: Project) {
                 }
 
                 setCaretEnabled(true)
-                putUserData(editorId, true)
-
-                editor = this
             }
     }
 }

@@ -47,11 +47,10 @@ class OpcodesTerminalPanel(
     private val editorProvider = project.getService(EditorProvider::class.java)
     private val state = PhpDumpSettingsService.getInstance(project)
 
-    val editor = editorProvider.getOrCreateEditor()
+    val editor = editorProvider.getOrCreateEditor(EditorProvider.opcodesEditorId)
     val viewComponent = editor.component
 
     init {
-
         createToolBar()
         createContent()
     }

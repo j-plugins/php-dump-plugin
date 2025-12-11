@@ -33,7 +33,7 @@ class EditorListener : EditorMouseListener {
         method: Method
     ) {
         val editorProvider = project.getService(EditorProvider::class.java)
-        val opcodesEditor = editorProvider.getOrCreateEditor()
+        val opcodesEditor = editorProvider.getOrCreateEditor(EditorProvider.opcodesEditorId)
 
         val psiFile = psiDocumentManager.getPsiFile(opcodesEditor.document) as? PHPOpFile ?: return
 
