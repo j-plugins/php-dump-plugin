@@ -7,6 +7,7 @@ import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.github.xepozz.php_dump.configuration.PhpOpcacheDebugLevel
 import com.github.xepozz.php_dump.services.EditorProvider
 import com.github.xepozz.php_dump.services.OpcodesDumperService
+import com.intellij.execution.process.ProcessOutput
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
@@ -15,7 +16,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -169,9 +170,9 @@ class OpcodesTerminalPanel(
         val virtualFile = editor.virtualFile ?: return
 
         CoroutineScope(Dispatchers.IO).launch {
-            val result = service.dump(virtualFile)
+            val result = service.dump(virtualFile) as ProcessOutput
 
-            val content = result
+            val content = result.stderr.ifEmpty { result.stdout }
                 .asSafely<String>()
                 ?.replace("\r\n", "\n")
                 ?: "No output"
@@ -183,9 +184,8 @@ class OpcodesTerminalPanel(
     }
 
     private fun setDocumentText(project: Project, content: String) {
-        WriteCommandAction.runWriteCommandAction(project) {
+        runWriteAction {
             editor.document.setText(content)
-            documentManager.commitDocument(editor.document)
         }
     }
 

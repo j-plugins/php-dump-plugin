@@ -81,6 +81,8 @@ class CustomTreePanel(
     val service: CustomTreeDumperService = project.getService(CustomTreeDumperService::class.java)
     val editorProvider: EditorProvider = project.getService(EditorProvider::class.java)
 
+    private var showRawOutputMode = false
+
     val scrollPane = JBScrollPane(tree)
     var contentPanel: JComponent = JPanel(BorderLayout()).apply { add(scrollPane) }
     val rawVirtualFile = LightVirtualFile("Raw Output", "")
@@ -96,8 +98,6 @@ class CustomTreePanel(
 
         SwingUtilities.invokeLater { refreshData() }
     }
-
-    private var showRawOutput = false
     fun createToolbar() {
         val actionGroup = DefaultActionGroup().apply {
             add(RefreshAction { refreshData() })
@@ -110,14 +110,14 @@ class CustomTreePanel(
             })
             add(object :
                 ToggleAction("Use Object Tokens", "Switches engine to dump lexical tokens", AllIcons.FileTypes.Json) {
-                override fun isSelected(event: AnActionEvent): Boolean = showRawOutput
+                override fun isSelected(event: AnActionEvent): Boolean = showRawOutputMode
 
                 override fun setSelected(event: AnActionEvent, value: Boolean) {
                     println("switch content")
                     event.presentation.icon = if (value) AllIcons.FileTypes.Json else AllIcons.FileTypes.Text
-                    showRawOutput = value
+                    showRawOutputMode = value
                     contentPanel.components.forEach { contentPanel.remove(it) }
-                    contentPanel.add(if (showRawOutput) rawPanel else scrollPane)
+                    contentPanel.add(if (showRawOutputMode) rawPanel else scrollPane)
                     SwingUtilities.invokeLater { contentPanel.repaint() }
                 }
 
@@ -218,7 +218,7 @@ class CustomTreePanel(
             }
         }
 
-        if (error != null) {
+        if (!showRawOutputMode && error != null) {
             NotificationUtil
                 .sendNotification(
                     project,
