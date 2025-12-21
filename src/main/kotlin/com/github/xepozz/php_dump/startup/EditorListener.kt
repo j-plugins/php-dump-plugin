@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.php.lang.psi.elements.Method
+import com.jetbrains.php.lang.psi.elements.PhpPropertyHook
 
 
 class EditorListener : EditorMouseListener {
@@ -22,7 +23,7 @@ class EditorListener : EditorMouseListener {
         val offset = editor.logicalPositionToOffset(event.logicalPosition)
         val element = psiFile?.findElementAt(offset) ?: return
 
-        val method = PsiTreeUtil.getParentOfType(element, Method::class.java) ?: return
+        val method = PsiTreeUtil.getParentOfType(element, Method::class.java, PhpPropertyHook::class.java) ?: return
 
         highlightElement(project, psiDocumentManager, method)
     }
@@ -36,10 +37,16 @@ class EditorListener : EditorMouseListener {
         val opcodesEditor = editorProvider.getOrCreateEditor(EditorProvider.opcodesEditorId)
 
         val psiFile = psiDocumentManager.getPsiFile(opcodesEditor.document) as? PHPOpFile ?: return
-
         val blocks = PsiTreeUtil.findChildrenOfType(psiFile, PHPOpBlock::class.java)
 
-        val selectedBlock = blocks.firstOrNull { it.blockName.methodName?.name == method.name } ?: return
+        val selectedBlock = when {
+            method is PhpPropertyHook -> blocks.firstOrNull {
+                val propertyHook = it.blockName.propertyHookName ?: return@firstOrNull false
+                "${propertyHook.propertyName.name}::${propertyHook.name}" == method.name
+            } ?: return
+
+            else -> blocks.firstOrNull { it.blockName.methodName?.name == method.name } ?: return
+        }
 
 
         opcodesEditor.foldingModel.apply {
