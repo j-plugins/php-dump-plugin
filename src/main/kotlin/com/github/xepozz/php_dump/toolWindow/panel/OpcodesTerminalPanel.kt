@@ -20,6 +20,7 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
@@ -42,6 +43,7 @@ class OpcodesTerminalPanel(
 
     val fileEditorManager = FileEditorManager.getInstance(project)
     val documentManager = PsiDocumentManager.getInstance(project)
+    val fileDocumentManager = FileDocumentManager.getInstance()
     val editorFactory = EditorFactory.getInstance()
 
     private val service = project.getService(OpcodesDumperService::class.java)
@@ -169,9 +171,19 @@ class OpcodesTerminalPanel(
         val editor = fileEditorManager.selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val result = service.dump(virtualFile) as ProcessOutput
+        fileDocumentManager.saveDocument(editor.document)
 
+        CoroutineScope(Dispatchers.IO).launch {
+            var result = service.dump(virtualFile) as ProcessOutput
+            if (result.stdout.startsWith("Error: Could not compile file")) {
+                result = service.dump(virtualFile) as ProcessOutput
+            }
+
+//            if (result.stdout.startsWith("No syntax errors detected")) {
+//
+//            }
+//            println("reso: ${result.stdout}")
+//            println("rese: ${result.stderr}")
             val content = result.stderr.ifEmpty { result.stdout }
                 .asSafely<String>()
                 ?.replace("\r\n", "\n")
@@ -186,6 +198,7 @@ class OpcodesTerminalPanel(
     private fun setDocumentText(project: Project, content: String) {
         runWriteAction {
             editor.document.setText(content)
+            documentManager.commitDocument(editor.document)
         }
     }
 
