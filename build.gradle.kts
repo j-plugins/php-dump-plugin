@@ -39,7 +39,7 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 //    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
     testImplementation(libs.junit)
